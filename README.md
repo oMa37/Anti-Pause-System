@@ -1,10 +1,8 @@
 # Anti-Pause System by oMa37
 
-Anti-Pause System by oMa37
-
 Callbacks:
 
-  OnPlayerPause(playerid, type);
+    OnPlayerPause(playerid, type);
   Types:
   1 - Player has tabbed out
   2 - Player is not moving
