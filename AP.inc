@@ -25,13 +25,22 @@
 
 	Defines:
 
-	#define PAUSE_LABEL - This will enable the 3D text label on the player name (Text: AFK)
+	#define PAUSE_LABEL - Enables the 3D text label on the player name.
+    #define PAUSE_LABEL_TEXT "YourText" - Change the 3D label text.
+    #define PAUSE_LABEL_COLOR (0xCOLOR) - Change the 3D label color.
 */
 
 #if !defined INVALID_STREAMER_ID
-	#error This include require streamer include
+	#error This include require streamer
 #endif
 
+#if ((defined PAUSE_LABEL) && (!defined PAUSE_LABEL_TEXT))
+	#error Please define the 3D label text
+#endif
+
+#if ((defined PAUSE_LABEL) && (!defined PAUSE_LABEL_COLOR))
+	#error Please define the 3D label color
+#endif
 
 // Variables
 
@@ -193,8 +202,8 @@ public PausedCheck() {
 				pTime[i] = gettime();
 				pType[i] = PAUSE_TYPE_TABOUT;
 
-				#if defined PAUSE_LABEL
-					pLabel[i] = CreateDynamic3DTextLabel("AFK", 0xFF0000FF, x, y, z+0.9, 15.0, i);
+				#if ((defined PAUSE_LABEL) && (defined PAUSE_LABEL_TEXT) && (defined PAUSE_LABEL_COLOR))
+					pLabel[i] = CreateDynamic3DTextLabel(PAUSE_LABEL_TEXT, PAUSE_LABEL_COLOR, x, y, z+0.9, 15.0, i);
 				#endif
 
 				CallLocalFunction("OnPlayerPause", "ii", i, PAUSE_TYPE_TABOUT);
@@ -206,8 +215,8 @@ public PausedCheck() {
 				pMoveTime[i] = gettime();
 				pType[i] = PAUSE_TYPE_MOVE;
 
-				#if defined PAUSE_LABEL
-					pLabel[i] = CreateDynamic3DTextLabel("AFK", 0xFF0000FF, x, y, z+0.9, 15.0, i);
+				#if ((defined PAUSE_LABEL) && (defined PAUSE_LABEL_TEXT) && (defined PAUSE_LABEL_COLOR))
+					pLabel[i] = CreateDynamic3DTextLabel(PAUSE_LABEL_TEXT, PAUSE_LABEL_COLOR, x, y, z+0.9, 15.0, i);
 				#endif
 
 				CallLocalFunction("OnPlayerPause", "ii", i, PAUSE_TYPE_MOVE);
@@ -216,8 +225,8 @@ public PausedCheck() {
 
 				IsPaused[i] = 0;
 
-				if(IsValidDynamic3DTextLabel(pLabel[playerid]))
-					DestroyDynamic3DTextLabel(pLabel[playerid]);
+				if(IsValidDynamic3DTextLabel(pLabel[i]))
+					DestroyDynamic3DTextLabel(pLabel[i]);
 
 				CallLocalFunction("OnPlayerUnPause", "iii", i, UNPAUSE_TYPE_CONNECTED, GetPauseTime(i));
 			}
