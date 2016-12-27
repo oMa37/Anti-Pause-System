@@ -22,6 +22,10 @@
 	IsPlayerPaused(playerid);
 	GetPauseTime(playerid);
 	GetPauseType(playerid);
+
+	Defines:
+
+	#define PAUSE_LABEL - This will enable the 3D text label on the player name (Text: AFK)
 */
 
 #if !defined INVALID_STREAMER_ID
@@ -145,10 +149,6 @@ public OnPlayerUpdate(playerid) {
 	pTick[playerid] = gettime();
 	GetPlayerPos(playerid, pLastX[playerid], pLastY[playerid], pLastZ[playerid]);
 
-	#if defined PAUSE_LABEL
-		DestroyDynamic3DTextLabel(pLabel[playerid]);
-	#endif
-
 	#if defined TW_OnPlayerUpdate
 		return TW_OnPlayerUpdate(playerid);
 	#else
@@ -194,7 +194,7 @@ public PausedCheck() {
 				pType[i] = PAUSE_TYPE_TABOUT;
 
 				#if defined PAUSE_LABEL
-					pLabel[i] = CreateDynamic3DTextLabel("AFK", 0xFF0000FF, x, y, z, 15.0, i);
+					pLabel[i] = CreateDynamic3DTextLabel("AFK", 0xFF0000FF, x, y, z+0.9, 15.0, i);
 				#endif
 
 				CallLocalFunction("OnPlayerPause", "ii", i, PAUSE_TYPE_TABOUT);
@@ -207,7 +207,7 @@ public PausedCheck() {
 				pType[i] = PAUSE_TYPE_MOVE;
 
 				#if defined PAUSE_LABEL
-					pLabel[i] = CreateDynamic3DTextLabel("AFK", 0xFF0000FF, x, y, z, 15.0, i);
+					pLabel[i] = CreateDynamic3DTextLabel("AFK", 0xFF0000FF, x, y, z+0.9, 15.0, i);
 				#endif
 
 				CallLocalFunction("OnPlayerPause", "ii", i, PAUSE_TYPE_MOVE);
@@ -216,9 +216,8 @@ public PausedCheck() {
 
 				IsPaused[i] = 0;
 
-				#if defined PAUSE_LABEL
-					DestroyDynamic3DTextLabel(pLabel[i]);
-				#endif
+				if(IsValidDynamic3DTextLabel(pLabel[playerid]))
+					DestroyDynamic3DTextLabel(pLabel[playerid]);
 
 				CallLocalFunction("OnPlayerUnPause", "iii", i, UNPAUSE_TYPE_CONNECTED, GetPauseTime(i));
 			}
