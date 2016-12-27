@@ -12,7 +12,7 @@ Callbacks:
     
     Types:
     1 - Player has disconnected
-    1 - Player still connected
+    2 - Player still connected
   
     Time in seconds
   
