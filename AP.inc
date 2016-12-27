@@ -32,14 +32,15 @@
 // Variables
 
 new
-	pTick[MAX_PLAYERS],
-	pTime[MAX_PLAYERS],
-	pType[MAX_PLAYERS],
-	Float:pLastX[MAX_PLAYERS],
-	Float:pLastY[MAX_PLAYERS],
-	Float:pLastZ[MAX_PLAYERS],
-	Text3D:pLabel[MAX_PLAYERS],
-	IsPaused[MAX_PLAYERS];
+	pTick 			[MAX_PLAYERS],
+	pTime 			[MAX_PLAYERS],
+	pType 			[MAX_PLAYERS],
+	pMoveTime 		[MAX_PLAYERS],
+	Float:pLastX 	[MAX_PLAYERS],
+	Float:pLastY 	[MAX_PLAYERS],
+	Float:pLastZ 	[MAX_PLAYERS],
+	Text3D:pLabel 	[MAX_PLAYERS],
+	IsPaused 		[MAX_PLAYERS];
 
 
 // Defines
@@ -155,6 +156,17 @@ public OnPlayerUpdate(playerid) {
 	#endif
 }
 
+public OnPlayerText(playerid, text[]) {
+	
+	pMoveTime[playerid] = gettime();
+
+	#if defined TW_OnPlayerText
+		return TW_OnPlayerText(playerid, text[]);
+	#else
+		return 1;
+	#endif
+}
+
 public PausedCheck() {
 
 	for(new i, j = GetPlayerPoolSize(); i <= j; i++) {
@@ -164,7 +176,7 @@ public PausedCheck() {
 			new Float:x, Float:y, Float:z;
 			GetPlayerPos(i, x, y, z);
 
-			if(gettime() - pTick[i] < 3) {
+			if(gettime() - pTick[i] < 3 && IsPaused[i] == 0) {
 
 				IsPaused[i] = 1;
 				pTime[i] = gettime();
@@ -176,10 +188,11 @@ public PausedCheck() {
 
 				CallLocalFunction("OnPlayerPause", "ii", i, PAUSE_TYPE_TABOUT);
 			}
-			else if(pLastX[i] == x && pLastY[i] == y && pLastZ[i] == z) {
+			else if((pLastX[i] == x && pLastY[i] == y && pLastZ[i] == z) && gettime() - pMoveTime[i] < 6 && IsPaused[i] == 0) {
 
 				IsPaused[i] = 1;
 				pTime[i] = gettime();
+				pMoveTime[i] = gettime();
 				pType[i] = PAUSE_TYPE_MOVE;
 
 				#if defined PAUSE_LABEL
@@ -280,6 +293,17 @@ public PausedCheck() {
 #define OnPlayerUpdate TW_OnPlayerUpdate
 #if defined TW_OnPlayerUpdate
 	forward TW_OnPlayerUpdate(playerid);
+#endif
+
+#if defined _ALS_OnPlayerText
+	#undef OnPlayerText
+#else
+	#define _ALS_OnPlayerText
+#endif
+
+#define OnPlayerText TW_OnPlayerText
+#if defined TW_OnPlayerText
+	forward TW_OnPlayerText(playerid, text[]);
 #endif
 
 
