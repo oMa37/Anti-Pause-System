@@ -16,7 +16,6 @@ Callbacks:
   
   Time in seconds
   
-  
 Functions:
 
   IsPlayerPaused(playerid);
