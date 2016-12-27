@@ -1,4 +1,5 @@
-# Anti-Pause System by oMa37
+# Anti-Pause System - Automatic
+
 
 Callbacks:
 
