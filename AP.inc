@@ -167,6 +167,17 @@ public OnPlayerText(playerid, text[]) {
 	#endif
 }
 
+public OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
+
+	pMoveTime[playerid] = gettime();
+
+	#if defined TW_OnPlayerKeyStateChange
+		return TW_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
+	#else
+		return 1;
+	#endif
+}
+
 public PausedCheck() {
 
 	for(new i, j = GetPlayerPoolSize(); i <= j; i++) {
@@ -176,7 +187,7 @@ public PausedCheck() {
 			new Float:x, Float:y, Float:z;
 			GetPlayerPos(i, x, y, z);
 
-			if(gettime() - pTick[i] < 3 && IsPaused[i] == 0) {
+			if(gettime() - pTick[i] < 4 && IsPaused[i] == 0) {
 
 				IsPaused[i] = 1;
 				pTime[i] = gettime();
@@ -306,6 +317,16 @@ public PausedCheck() {
 	forward TW_OnPlayerText(playerid, text[]);
 #endif
 
+#if defined _ALS_OnPlayerKeyStateChange
+	#undef OnPlayerKeyStateChange
+#else
+	#define _ALS_OnPlayerKeyStateChange
+#endif
+
+#define OnPlayerKeyStateChange TW_OnPlayerKeyStateChange
+#if defined TW_OnPlayerKeyStateChange
+	forward TW_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
+#endif
 
 // Forwards
 
