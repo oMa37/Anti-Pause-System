@@ -3,13 +3,13 @@
 
 Callbacks:
 
-    OnPlayerPause(playerid, type);
+    <color=red>OnPlayerPause(playerid, type);</color>
     
     Types:
     1 - Player has tabbed out
     2 - Player is not moving
   
-    OnPlayerUnPause(playerid, type, time);
+    <color=red>OnPlayerUnPause(playerid, type, time);</color> 
     
     Types:
     1 - Player has disconnected
@@ -19,11 +19,11 @@ Callbacks:
   
 Functions:
 
-    IsPlayerPaused(playerid);
+    <color=red>IsPlayerPaused(playerid);</color> 
     - Returns 1 if the player is paused, 0 if is not.
   
-    GetPauseTime(playerid);
+    <color=red>GetPauseTime(playerid);</color> 
     - Returns player paused time in seconds.
   
-    GetPauseType(playerid);
+    <color=red>GetPauseType(playerid);</color> 
     - Returns 1 if the player tabbed out, 2 if the player is not moving.
