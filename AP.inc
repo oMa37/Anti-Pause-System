@@ -31,15 +31,15 @@
 
 // Variables
 
-static 
-		pTick[MAX_PLAYERS],
-		pTime[MAX_PLAYERS],
-		pType[MAX_PLAYERS],
-		Float:pLastX[MAX_PLAYERS],
-		Float:pLastY[MAX_PLAYERS],
-		Float:pLastZ[MAX_PLAYERS],
-		Text3D:pLabel[MAX_PLAYERS],
-		IsPaused[MAX_PLAYERS];
+new
+	pTick[MAX_PLAYERS],
+	pTime[MAX_PLAYERS],
+	pType[MAX_PLAYERS],
+	Float:pLastX[MAX_PLAYERS],
+	Float:pLastY[MAX_PLAYERS],
+	Float:pLastZ[MAX_PLAYERS],
+	Text3D:pLabel[MAX_PLAYERS],
+	IsPaused[MAX_PLAYERS];
 
 
 // Defines
@@ -57,17 +57,46 @@ static
 
 // Callbacks
 
-public OnGameModeExit() {
+#if defined FILTERSCRIPT
 
-	for(new i, j = GetPlayerPoolSize(); i <= j; i++) {
+	public OnFilterScriptExit() {
+		
+		DestroyAllDynamic3DTextLabels();
 
-		pTick[i] = 0;
-		pTime[i] = 0;
-		IsPaused[i] = 0;
-		DestroyDynamic3DTextLabel(pLabel[i]);
+		#if defined TW_OnFilterScriptExit
+			return TW_OnFilterScriptExit();
+		#else
+			return 1;
+		#endif
 	}
 
+	public OnFilterScriptInit() {
+		
+		SetTimer("PausedCheck", 5000, true);
+
+		#if defined TW_OnFilterScriptInit
+			return TW_OnFilterScriptInit();
+		#else
+			return 1;
+		#endif
+	}
+
+#endif	
+
+public OnGameModeInit() {
+
 	SetTimer("PausedCheck", 5000, true);
+
+	#if defined TW_OnGameModeInit
+		return TW_OnGameModeInit();
+	#else
+		return 1;
+	#endif
+}
+
+public OnGameModeExit() {
+
+	DestroyAllDynamic3DTextLabels();
 
 	#if defined TW_OnGameModeExit
 		return TW_OnGameModeExit();
@@ -78,13 +107,12 @@ public OnGameModeExit() {
 
 public OnPlayerConnect(playerid) {
 
+	if(IsValidDynamic3DTextLabel(pLabel[playerid]))
+		DestroyDynamic3DTextLabel(pLabel[playerid]);
+
 	pTick[playerid] = 0;
 	pTime[playerid] = 0;
 	IsPaused[playerid] = 0;
-
-	#if defined PAUSE_LABEL
-		DestroyDynamic3DTextLabel(pLabel[playerid]);
-	#endif
 
 	#if defined TW_OnPlayerConnect
 		return TW_OnPlayerConnect(playerid);
@@ -95,13 +123,12 @@ public OnPlayerConnect(playerid) {
 
 public OnPlayerDisconnect(playerid) {
 
+	if(IsValidDynamic3DTextLabel(pLabel[playerid]))
+		DestroyDynamic3DTextLabel(pLabel[playerid]);
+
 	pTick[playerid] = 0;
 	pTime[playerid] = 0;
 	IsPaused[playerid] = 0;
-
-	#if defined PAUSE_LABEL
-		DestroyDynamic3DTextLabel(pLabel[playerid]);
-	#endif
 
 	CallLocalFunction("OnPlayerUnPause", "ii", playerid, UNPAUSE_TYPE_DISCONNECTED);
 
@@ -177,6 +204,39 @@ public PausedCheck() {
 
 
 // Hooks
+
+#if defined _ALS_OnFilterScriptInit
+	#undef OnFilterScriptInit
+#else
+	#define _ALS_OnFilterScriptInit
+#endif
+
+#define OnFilterScriptInit TW_OnFilterScriptInit
+#if defined TW_OnFilterScriptInit
+	forward TW_OnFilterScriptInit();
+#endif
+
+#if defined _ALS_OnFilterScriptExit
+	#undef OnFilterScriptExit
+#else
+	#define _ALS_OnFilterScriptExit
+#endif
+
+#define OnFilterScriptExit TW_OnFilterScriptExit
+#if defined TW_OnFilterScriptExit
+	forward TW_OnFilterScriptExit();
+#endif
+
+#if defined _ALS_OnGameModeInit
+	#undef OnGameModeInit
+#else
+	#define _ALS_OnGameModeInit
+#endif
+
+#define OnGameModeInit TW_OnGameModeInit
+#if defined TW_OnGameModeInit
+	forward TW_OnGameModeInit();
+#endif
 
 #if defined _ALS_OnGameModeExit
 	#undef OnGameModeExit
