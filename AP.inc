@@ -45,16 +45,15 @@
 // Variables
 
 new
-	TW_PAUSE_TICK 			[MAX_PLAYERS],
-	TW_PAUSE_TIME 			[MAX_PLAYERS],
-	TW_PAUSE_TYPE 			[MAX_PLAYERS],
-	TW_MOVE_TIME 			[MAX_PLAYERS],
-	Float:TW_PAUSE_LASTX 	[MAX_PLAYERS],
-	Float:TW_PAUSE_LASTY 	[MAX_PLAYERS],
-	Float:TW_PAUSE_LASTZ 	[MAX_PLAYERS],
-	Text3D:TW_PAUSE_LABEL 	[MAX_PLAYERS],
-	TW_ISPAUSED 			[MAX_PLAYERS],
-	TW_PAUSE_CHECK_TIMER;
+	pTick 			[MAX_PLAYERS],
+	pTime 			[MAX_PLAYERS],
+	pType 			[MAX_PLAYERS],
+	pMoveTime 		[MAX_PLAYERS],
+	Float:pLastX 	[MAX_PLAYERS],
+	Float:pLastY 	[MAX_PLAYERS],
+	Float:pLastZ 	[MAX_PLAYERS],
+	Text3D:pLabel 	[MAX_PLAYERS],
+	bool:IsPaused 	[MAX_PLAYERS];
 
 
 // Defines
@@ -65,30 +64,18 @@ new
 #define PAUSE_TYPE_TABOUT 1
 #define PAUSE_TYPE_MOVE 2
 
-#define IsPlayerPaused(%0) TW_ISPAUSED[(%0)]
-#define GetPauseTime(%0) gettime() - TW_PAUSE_TIME[(%0)]
-#define GetPauseType(%0) TW_PAUSE_TYPE[(%0)]
+#define IsPlayerPaused(%0) IsPaused[(%0)]
+#define GetPauseTime(%0) gettime() - pTime[(%0)]
+#define GetPauseType(%0) pType[(%0)]
 
 
 // Callbacks
 
 #if defined FILTERSCRIPT
 
-	public OnFilterScriptInit() {
-		
-		TW_PAUSE_CHECK_TIMER = SetTimer("PausedCheck", 5000, true);
-
-		#if defined TW_OnFilterScriptInit
-			return TW_OnFilterScriptInit();
-		#else
-			return 1;
-		#endif
-	}
-
 	public OnFilterScriptExit() {
 		
 		DestroyAllDynamic3DTextLabels();
-		KillTimer(TW_PAUSE_CHECK_TIMER);
 
 		#if defined TW_OnFilterScriptExit
 			return TW_OnFilterScriptExit();
@@ -97,41 +84,48 @@ new
 		#endif
 	}
 
-#else
+	public OnFilterScriptInit() {
+		
+		SetTimer("PausedCheck", 5000, true);
 
-	public OnGameModeInit() {
-
-		TW_PAUSE_CHECK_TIMER = SetTimer("PausedCheck", 5000, true);
-
-		#if defined TW_OnGameModeInit
-			return TW_OnGameModeInit();
+		#if defined TW_OnFilterScriptInit
+			return TW_OnFilterScriptInit();
 		#else
 			return 1;
 		#endif
 	}
 
-	public OnGameModeExit() {
+#endif	
 
-		DestroyAllDynamic3DTextLabels();
-		KillTimer(TW_PAUSE_CHECK_TIMER);
+public OnGameModeInit() {
 
-		#if defined TW_OnGameModeExit
-			return TW_OnGameModeExit();
-		#else
-			return 1;
-		#endif
-	}
+	SetTimer("PausedCheck", 5000, true);
 
-#endif
+	#if defined TW_OnGameModeInit
+		return TW_OnGameModeInit();
+	#else
+		return 1;
+	#endif
+}
+
+public OnGameModeExit() {
+
+	DestroyAllDynamic3DTextLabels();
+
+	#if defined TW_OnGameModeExit
+		return TW_OnGameModeExit();
+	#else
+		return 1;
+	#endif
+}
 
 public OnPlayerConnect(playerid) {
 
-	if(IsValidDynamic3DTextLabel(TW_PAUSE_LABEL[playerid]))
-		DestroyDynamic3DTextLabel(TW_PAUSE_LABEL[playerid]);
+	if(IsValidDynamic3DTextLabel(pLabel[playerid]))
+		DestroyDynamic3DTextLabel(pLabel[playerid]);
 
-	TW_PAUSE_TICK[playerid] = 0;
-	TW_PAUSE_TIME[playerid] = 0;
-	TW_ISPAUSED[playerid] = 0;
+	pTick[playerid] = pTime[playerid] = 0;
+	IsPaused[playerid] = false;
 
 	#if defined TW_OnPlayerConnect
 		return TW_OnPlayerConnect(playerid);
@@ -142,12 +136,11 @@ public OnPlayerConnect(playerid) {
 
 public OnPlayerDisconnect(playerid) {
 
-	if(IsValidDynamic3DTextLabel(TW_PAUSE_LABEL[playerid]))
-		DestroyDynamic3DTextLabel(TW_PAUSE_LABEL[playerid]);
+	if(IsValidDynamic3DTextLabel(pLabel[playerid]))
+		DestroyDynamic3DTextLabel(pLabel[playerid]);
 
-	TW_PAUSE_TICK[playerid] = 0;
-	TW_PAUSE_TIME[playerid] = 0;
-	TW_ISPAUSED[playerid] = 0;
+	pTick[playerid] = pTime[playerid] = 0;
+	IsPaused[playerid] = false;
 
 	CallLocalFunction("OnPlayerUnPause", "ii", playerid, UNPAUSE_TYPE_DISCONNECTED);
 
@@ -160,8 +153,8 @@ public OnPlayerDisconnect(playerid) {
 
 public OnPlayerUpdate(playerid) {
 
-	TW_PAUSE_TICK[playerid] = gettime();
-	GetPlayerPos(playerid, TW_PAUSE_LASTX[playerid], TW_PAUSE_LASTY[playerid], TW_PAUSE_LASTZ[playerid]);
+	pTick[playerid] = gettime();
+	GetPlayerPos(playerid, pLastX[playerid], pLastY[playerid], pLastZ[playerid]);
 
 	#if defined TW_OnPlayerUpdate
 		return TW_OnPlayerUpdate(playerid);
@@ -172,7 +165,7 @@ public OnPlayerUpdate(playerid) {
 
 public OnPlayerText(playerid, text[]) {
 	
-	TW_MOVE_TIME[playerid] = gettime();
+	pMoveTime[playerid] = gettime();
 
 	#if defined TW_OnPlayerText
 		return TW_OnPlayerText(playerid, text[]);
@@ -183,7 +176,7 @@ public OnPlayerText(playerid, text[]) {
 
 public OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
 
-	TW_MOVE_TIME[playerid] = gettime();
+	pMoveTime[playerid] = gettime();
 
 	#if defined TW_OnPlayerKeyStateChange
 		return TW_OnPlayerKeyStateChange(playerid, newkeys, oldkeys);
@@ -201,37 +194,37 @@ public PausedCheck() {
 			new Float:x, Float:y, Float:z;
 			GetPlayerPos(i, x, y, z);
 
-			if(gettime() - TW_PAUSE_TICK[i] < 4 && TW_ISPAUSED[i] == 0) {
+			if(gettime() - pTick[i] < 4 && !IsPaused[i]) {
 
-				TW_ISPAUSED[i] = 1;
-				TW_PAUSE_TIME[i] = gettime();
-				TW_PAUSE_TYPE[i] = PAUSE_TYPE_TABOUT;
+				IsPaused[i] = true;
+				pTime[i] = gettime();
+				pType[i] = PAUSE_TYPE_TABOUT;
 
 				#if ((defined PAUSE_LABEL) && (defined PAUSE_LABEL_TEXT) && (defined PAUSE_LABEL_COLOR))
-					TW_PAUSE_LABEL[i] = CreateDynamic3DTextLabel(PAUSE_LABEL_TEXT, PAUSE_LABEL_COLOR, x, y, z+0.9, 15.0, i);
+					pLabel[i] = CreateDynamic3DTextLabel(PAUSE_LABEL_TEXT, PAUSE_LABEL_COLOR, x, y, z+0.9, 15.0, i);
 				#endif
 
 				CallLocalFunction("OnPlayerPause", "ii", i, PAUSE_TYPE_TABOUT);
 			}
-			else if((TW_PAUSE_LASTX[i] == x && TW_PAUSE_LASTY[i] == y && TW_PAUSE_LASTZ[i] == z) && gettime() - TW_MOVE_TIME[i] < 6 && TW_ISPAUSED[i] == 0) {
+			else if((pLastX[i] == x && pLastY[i] == y && pLastZ[i] == z) && gettime() - pMoveTime[i] < 6 && !IsPaused[i]) {
 
-				TW_ISPAUSED[i] = 1;
-				TW_PAUSE_TIME[i] = gettime();
-				TW_MOVE_TIME[i] = gettime();
-				TW_PAUSE_TYPE[i] = PAUSE_TYPE_MOVE;
+				IsPaused[i] = true;
+				pTime[i] = gettime();
+				pMoveTime[i] = gettime();
+				pType[i] = PAUSE_TYPE_MOVE;
 
 				#if ((defined PAUSE_LABEL) && (defined PAUSE_LABEL_TEXT) && (defined PAUSE_LABEL_COLOR))
-					TW_PAUSE_LABEL[i] = CreateDynamic3DTextLabel(PAUSE_LABEL_TEXT, PAUSE_LABEL_COLOR, x, y, z+0.9, 15.0, i);
+					pLabel[i] = CreateDynamic3DTextLabel(PAUSE_LABEL_TEXT, PAUSE_LABEL_COLOR, x, y, z+0.9, 15.0, i);
 				#endif
 
 				CallLocalFunction("OnPlayerPause", "ii", i, PAUSE_TYPE_MOVE);
 			}
 			else {
 
-				TW_ISPAUSED[i] = 0;
+				IsPaused[i] = false;
 
-				if(IsValidDynamic3DTextLabel(TW_PAUSE_LABEL[i]))
-					DestroyDynamic3DTextLabel(TW_PAUSE_LABEL[i]);
+				if(IsValidDynamic3DTextLabel(pLabel[i]))
+					DestroyDynamic3DTextLabel(pLabel[i]);
 
 				CallLocalFunction("OnPlayerUnPause", "iii", i, UNPAUSE_TYPE_CONNECTED, GetPauseTime(i));
 			}
