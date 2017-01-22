@@ -140,7 +140,7 @@ public OnPlayerConnect(playerid) {
 	#endif
 }
 
-public OnPlayerDisconnect(playerid) {
+public OnPlayerDisconnect(playerid, reason) {
 
 	if(IsValidDynamic3DTextLabel(TW_PAUSE_LABEL[playerid]))
 		DestroyDynamic3DTextLabel(TW_PAUSE_LABEL[playerid]);
@@ -152,7 +152,7 @@ public OnPlayerDisconnect(playerid) {
 	CallLocalFunction("OnPlayerUnPause", "ii", playerid, UNPAUSE_TYPE_DISCONNECTED);
 
 	#if defined TW_OnPlayerDisconnect
-		return TW_OnPlayerDisconnect(playerid);
+		return TW_OnPlayerDisconnect(playerid, reason);
 	#else
 		return 1;
 	#endif
@@ -305,7 +305,7 @@ public PausedCheck() {
 
 #define OnPlayerDisconnect TW_OnPlayerDisconnect
 #if defined TW_OnPlayerDisconnect
-	forward TW_OnPlayerDisconnect(playerid);
+	forward TW_OnPlayerDisconnect(playerid, reason);
 #endif
 
 #if defined _ALS_OnPlayerUpdate
