@@ -175,7 +175,7 @@ public OnPlayerText(playerid, text[]) {
 	TW_MOVE_TIME[playerid] = gettime();
 
 	#if defined TW_OnPlayerText
-		return TW_OnPlayerText(playerid, text[]);
+		return TW_OnPlayerText(playerid, text);
 	#else
 		return 1;
 	#endif
