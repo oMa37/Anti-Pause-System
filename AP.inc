@@ -53,7 +53,7 @@ new
 	Float:TW_PAUSE_LASTY 	[MAX_PLAYERS],
 	Float:TW_PAUSE_LASTZ 	[MAX_PLAYERS],
 	Text3D:TW_PAUSE_LABEL 	[MAX_PLAYERS],
-	TW_ISPAUSED 			[MAX_PLAYERS],
+	bool:TW_ISPAUSED 		[MAX_PLAYERS],
 	TW_PAUSE_CHECK_TIMER;
 
 
@@ -129,9 +129,8 @@ public OnPlayerConnect(playerid) {
 	if(IsValidDynamic3DTextLabel(TW_PAUSE_LABEL[playerid]))
 		DestroyDynamic3DTextLabel(TW_PAUSE_LABEL[playerid]);
 
-	TW_PAUSE_TICK[playerid] = 0;
-	TW_PAUSE_TIME[playerid] = 0;
-	TW_ISPAUSED[playerid] = 0;
+	TW_PAUSE_TICK[playerid] = TW_PAUSE_TIME[playerid] = 0;
+	TW_ISPAUSED[playerid] = false;
 
 	#if defined TW_OnPlayerConnect
 		return TW_OnPlayerConnect(playerid);
@@ -145,9 +144,8 @@ public OnPlayerDisconnect(playerid, reason) {
 	if(IsValidDynamic3DTextLabel(TW_PAUSE_LABEL[playerid]))
 		DestroyDynamic3DTextLabel(TW_PAUSE_LABEL[playerid]);
 
-	TW_PAUSE_TICK[playerid] = 0;
-	TW_PAUSE_TIME[playerid] = 0;
-	TW_ISPAUSED[playerid] = 0;
+	TW_PAUSE_TICK[playerid] = TW_PAUSE_TIME[playerid] = 0;
+	TW_ISPAUSED[playerid] = false;
 
 	CallLocalFunction("OnPlayerUnPause", "ii", playerid, UNPAUSE_TYPE_DISCONNECTED);
 
@@ -201,9 +199,9 @@ public PausedCheck() {
 			new Float:x, Float:y, Float:z;
 			GetPlayerPos(i, x, y, z);
 
-			if(gettime() - TW_PAUSE_TICK[i] < 4 && TW_ISPAUSED[i] == 0) {
+			if(gettime() - TW_PAUSE_TICK[i] < 4 && !TW_ISPAUSED[i]) {
 
-				TW_ISPAUSED[i] = 1;
+				TW_ISPAUSED[i] = true;
 				TW_PAUSE_TIME[i] = gettime();
 				TW_PAUSE_TYPE[i] = PAUSE_TYPE_TABOUT;
 
@@ -213,9 +211,9 @@ public PausedCheck() {
 
 				CallLocalFunction("OnPlayerPause", "ii", i, PAUSE_TYPE_TABOUT);
 			}
-			else if((TW_PAUSE_LASTX[i] == x && TW_PAUSE_LASTY[i] == y && TW_PAUSE_LASTZ[i] == z) && gettime() - TW_MOVE_TIME[i] < 6 && TW_ISPAUSED[i] == 0) {
+			else if((TW_PAUSE_LASTX[i] == x && TW_PAUSE_LASTY[i] == y && TW_PAUSE_LASTZ[i] == z) && gettime() - TW_MOVE_TIME[i] < 6 && !TW_ISPAUSED[i]) {
 
-				TW_ISPAUSED[i] = 1;
+				TW_ISPAUSED[i] = true;
 				TW_PAUSE_TIME[i] = gettime();
 				TW_MOVE_TIME[i] = gettime();
 				TW_PAUSE_TYPE[i] = PAUSE_TYPE_MOVE;
@@ -228,7 +226,7 @@ public PausedCheck() {
 			}
 			else {
 
-				TW_ISPAUSED[i] = 0;
+				TW_ISPAUSED[i] = false;
 
 				if(IsValidDynamic3DTextLabel(TW_PAUSE_LABEL[i]))
 					DestroyDynamic3DTextLabel(TW_PAUSE_LABEL[i]);
